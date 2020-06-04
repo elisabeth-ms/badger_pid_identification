@@ -13,7 +13,7 @@ using namespace std;
 #include "IPlot.h"
 
 
-std::vector<std::array<double, 4>> read_csv(std::string filename){
+std::vector<std::array<double, 4>> read_csv(std::string filename, int start_row){
 
     std::vector<std::array<double,4>> result;
     ifstream myFile(filename);
@@ -23,25 +23,32 @@ std::vector<std::array<double, 4>> read_csv(std::string filename){
 
     std::array<double,4> line_data = {0,0,0,0};
     std::string line;
+    int count_line = 0;
     while(std::getline(myFile, line))
     {
-        std::stringstream ss(line);
-        int i=0;
-        double val;
-        while(ss >> val){
-            line_data[i] = val;
-            i++;
-            if(ss.peek() == ' ') 
-                ss.ignore();
+        if (count_line>=start_row)
+        {
+            std::stringstream ss(line);
+            int i=0;
+            double val;
+            while(ss >> val){
+                line_data[i] = val;
+                i++;
+                if(ss.peek() == ' ') 
+                    ss.ignore();
+            }
+            result.push_back(line_data);
         }
-        result.push_back(line_data);
+        count_line++;
     }
+
+    printf("%f", result.at(0)[0]);
     return result;
 }
 
 int main()
 {
-    std::vector<std::array<double,4>> result = read_csv("../data/joint1_data_identification.csv");
+    std::vector<std::array<double,4>> result = read_csv("../data/joint1_data_identification.csv", 1);
     double start_time = result.at(0)[0];
     IPlot real,id;
 
@@ -59,8 +66,6 @@ int main()
         Gz.UpdateSystem(result.at(i)[2],result.at(i)[1]);
         real.pushBack(result.at(i)[1]);
         t = result.at(i)[0];
-        printf("%f\n", result.at(i+1)[0]-result.at(i)[0]);
-        printf("%f\n", t-start_time);
         i++;
     }
     int count_max = i;
